@@ -18,10 +18,11 @@ const Login = () => {
 
     try {
       await signIn(email, password);
-      navigate('/');
     } catch (error: any) {
-      if (error.message.includes('Invalid login credentials')) {
-        setError('Invalid email or password. Not registered? Please sign up.');
+      if (error.message.includes('not registered')) {
+        setError('Account not found. Please register first.');
+      } else if (error.message.includes('Invalid login credentials')) {
+        setError('Invalid email or password.');
       } else {
         setError(error.message || 'Failed to sign in');
       }

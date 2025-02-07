@@ -10,6 +10,12 @@ if (!supabaseUrl || !supabaseAnonKey) {
 }
 
 console.log('Initializing Supabase with URL:', supabaseUrl);
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
-export { supabase }; 
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: true,
+    flowType: 'pkce',
+    redirectTo: 'https://aero-chat.vercel.app'
+  }
+}); 

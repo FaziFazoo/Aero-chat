@@ -19,10 +19,10 @@ const Register = () => {
 
     try {
       await signUp(email, password, fullName);
-      navigate('/login');
+      // Registration successful, user will be automatically logged in
     } catch (error: any) {
-      if (error.message.includes('User already registered')) {
-        setError('Email already registered. Please sign in instead.');
+      if (error.message.includes('already registered')) {
+        setError('This email is already registered. Please sign in instead.');
       } else {
         setError(error.message || 'Failed to create account');
       }

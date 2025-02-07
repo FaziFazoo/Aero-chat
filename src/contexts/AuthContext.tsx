@@ -47,12 +47,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
       
-      if (error) throw error;
+      if (error) {
+        if (error.message.includes('Invalid login credentials')) {
+          // Check if user exists but hasn't completed registration
+          const { data: userData } = await supabase.auth.admin.getUserByEmail(email);
+          if (!userData?.user) {
+            throw new Error('User not registered. Please sign up first.');
+          }
+        }
+        throw error;
+      }
       
       navigate('/');
     } catch (error) {
@@ -63,19 +72,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signUp = async (email: string, password: string, fullName: string) => {
     try {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          data: { full_name: fullName }
+          data: { full_name: fullName },
+          emailRedirectTo: 'https://aero-chat.vercel.app/login'
         }
       });
 
       if (error) throw error;
       
-      // Don't auto sign in, just redirect to login
-      navigate('/login');
-    } catch (error) {
+      // Check if user was created successfully
+      if (data?.user) {
+        // Auto sign in after registration
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email,
+          password
+        });
+        
+        if (signInError) throw signInError;
+        
+        navigate('/');
+      } else {
+        throw new Error('Registration failed. Please try again.');
+      }
+    } catch (error: any) {
       console.error('Sign up error:', error);
       throw error;
     }
@@ -94,17 +116,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const resetPassword = async (email: string) => {
     try {
-      console.log('Attempting password reset for:', email);
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
+        redirectTo: 'https://aero-chat.vercel.app/reset-password',
       });
       
-      if (error) {
-        console.error('Password reset error:', error);
-        throw error;
-      }
-      
-      console.log('Password reset email sent');
+      if (error) throw error;
     } catch (error) {
       console.error('Password reset error:', error);
       throw error;
