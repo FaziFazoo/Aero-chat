@@ -1,151 +1,161 @@
-import React, { useState } from 'react';
-import LoadingSpinner from './LoadingSpinner';
+import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 
-const API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY;
-const API_URL = "https://openrouter.ai/api/v1/chat/completions";
-
-// System message to define AI behavior
-const SYSTEM_MESSAGE = {
-  role: "system",
-  content: `You are an aerospace engineering expert assistant. Your primary focus is on:
-  - Aerospace engineering and industries
-  - CFD (Computational Fluid Dynamics)
-  - CAD (Computer-Aided Design)
-  - Mechanics and Physics related to aerospace
-  - Aircraft and spacecraft design
-  - Aerodynamics and propulsion systems
-
-  If a user asks questions outside these domains, politely redirect them by saying:
-  "I appreciate your inquiry, but my expertise is specifically focused on aerospace engineering and related physics topics. Would you like to ask something about aircraft, spacecraft, aerodynamics, or similar aerospace topics?"
-
-  Always maintain a professional and educational tone. When answering relevant questions, provide detailed technical explanations while keeping the content accessible.`
-};
-
-// Add this to debug the API key
-console.log('API Key loaded:', API_KEY ? 'Yes' : 'No');
-
-// Helper function to format message content
-const formatMessage = (content: string) => {
-  return content.split('\n').map((line, i) => (
-    <React.Fragment key={i}>
-      {line}
-      {i !== content.split('\n').length - 1 && <br />}
-    </React.Fragment>
-  ));
-};
+interface Message {
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: string;
+}
 
 const ChatInterface = () => {
-  const { user: currentUser } = useAuth();
-  const [messages, setMessages] = useState<Array<{ role: string; content: string }>>([]);
-  const [newMessage, setNewMessage] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [input, setInput] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { user, signOut } = useAuth();
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newMessage.trim() || loading) return;
+    if (!input.trim()) return;
 
-    setLoading(true);
+    const newMessage: Message = {
+      role: 'user',
+      content: input,
+      timestamp: new Date().toLocaleTimeString()
+    };
+
+    setMessages(prev => [...prev, newMessage]);
+    setInput('');
+    setIsLoading(true);
+
     try {
-      const userMessage = { role: 'user', content: newMessage };
-      setMessages(prev => [...prev, userMessage]);
-      setNewMessage('');
-
-      const headers = {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${API_KEY}`,
-        'HTTP-Referer': 'https://aero-chat.vercel.app',
-      };
-
-      const response = await fetch(API_URL, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({
-          model: 'anthropic/claude-2',
-          messages: [SYSTEM_MESSAGE, ...messages, userMessage],
-          temperature: 0.7,
-          max_tokens: 1000,
-          stream: false
-        })
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error('API Error Details:', errorData);
-        throw new Error(`API Error: ${response.status} - ${errorData.error?.message || 'Unknown error'}`);
-      }
-
-      const data = await response.json();
-      console.log('API Response:', data);
-
-      const aiMessage = {
+      // Add AI response
+      const aiMessage: Message = {
         role: 'assistant',
-        content: data.choices[0].message.content
+        content: 'This is a sample response from the AI assistant.',
+        timestamp: new Date().toLocaleTimeString()
       };
       setMessages(prev => [...prev, aiMessage]);
-    } catch (err) {
-      console.error('Error:', err);
-      const errorMessage = { 
-        role: 'assistant', 
-        content: `Error: ${err instanceof Error ? err.message : 'Unknown error'}` 
-      };
-      setMessages(prev => [...prev, errorMessage]);
+    } catch (error) {
+      console.error('Error:', error);
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="flex flex-col h-[600px] bg-white rounded-lg shadow">
-      <div className="bg-gray-50 p-4 border-b">
-        <h2 className="text-lg font-semibold text-gray-700">Aerospace Engineering Assistant</h2>
-        <p className="text-sm text-gray-500">Ask questions about aerospace, CFD, CAD, mechanics, and physics</p>
-      </div>
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.map((message, index) => (
-          <div
-            key={index}
-            className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-          >
-            <div
-              className={`max-w-[70%] rounded-lg p-3 whitespace-pre-wrap ${
-                message.role === 'user'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-200 text-gray-800'
-              }`}
-            >
-              {formatMessage(message.content)}
-            </div>
-          </div>
-        ))}
-      </div>
-      <form onSubmit={handleSubmit} className="p-4 border-t">
-        <div className="flex space-x-4">
-          <textarea
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            placeholder="Ask about aerospace engineering, CFD, aircraft design..."
-            className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-            disabled={loading}
-            rows={3}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                if (newMessage.trim()) {
-                  handleSubmit(e);
-                }
-              }
-            }}
-          />
+    <div className="flex h-screen bg-gray-100">
+      {/* Sidebar */}
+      <div className="w-64 bg-white border-r hidden md:block">
+        <div className="p-4 border-b">
+          <h2 className="text-lg font-semibold">Conversations</h2>
+        </div>
+        <div className="p-4">
           <button
-            type="submit"
-            disabled={loading}
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 h-fit"
+            onClick={() => signOut()}
+            className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-100 rounded-lg"
           >
-            {loading ? <LoadingSpinner /> : 'Send'}
+            Sign Out
           </button>
         </div>
-      </form>
+      </div>
+
+      {/* Main Chat Area */}
+      <div className="flex-1 flex flex-col max-w-4xl mx-auto">
+        {/* Header */}
+        <div className="bg-white shadow-sm px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <button 
+              onClick={() => signOut()} 
+              className="text-gray-600 md:hidden"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <h1 className="text-xl font-semibold">Aero Chat</h1>
+          </div>
+          <button className="text-gray-600">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Messages */}
+        <div className="flex-1 overflow-y-auto px-6 py-4">
+          {messages.length === 0 && (
+            <div className="text-center text-gray-500 mt-12">
+              <h2 className="text-2xl font-bold mb-3">Welcome to Aero Chat!</h2>
+              <p className="text-lg">Start your conversation with our AI assistant.</p>
+            </div>
+          )}
+          {messages.map((message, index) => (
+            <div
+              key={index}
+              className={`mb-6 flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+            >
+              <div
+                className={`max-w-[60%] rounded-lg px-6 py-3 ${
+                  message.role === 'user'
+                    ? 'bg-blue-500 text-white'
+                    : 'bg-white text-gray-800'
+                } shadow-md`}
+              >
+                <p className="text-base leading-relaxed">{message.content}</p>
+                <span className="text-xs opacity-75 mt-2 block">
+                  {message.timestamp}
+                </span>
+              </div>
+            </div>
+          ))}
+          {isLoading && (
+            <div className="flex justify-start mb-6">
+              <div className="bg-gray-200 rounded-lg px-6 py-3">
+                <div className="animate-pulse flex space-x-3">
+                  <div className="w-2.5 h-2.5 bg-gray-400 rounded-full"></div>
+                  <div className="w-2.5 h-2.5 bg-gray-400 rounded-full"></div>
+                  <div className="w-2.5 h-2.5 bg-gray-400 rounded-full"></div>
+                </div>
+              </div>
+            </div>
+          )}
+          <div ref={messagesEndRef} />
+        </div>
+
+        {/* Input */}
+        <div className="bg-white border-t px-6 py-4">
+          <form onSubmit={handleSubmit} className="max-w-4xl mx-auto">
+            <div className="flex items-center gap-4">
+              <input
+                type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder="Type your message..."
+                className="flex-1 border rounded-full px-6 py-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+                disabled={isLoading}
+              />
+              <button
+                type="submit"
+                disabled={isLoading || !input.trim()}
+                className="bg-blue-500 text-white rounded-full p-3 hover:bg-blue-600 disabled:opacity-50 transition-colors"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z" clipRule="evenodd" />
+                </svg>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
   );
 };
