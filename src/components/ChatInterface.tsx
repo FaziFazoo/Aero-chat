@@ -5,6 +5,23 @@ import { useAuth } from '../contexts/AuthContext';
 const API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY;
 const API_URL = "https://openrouter.ai/api/v1/chat/completions";
 
+// System message to define AI behavior
+const SYSTEM_MESSAGE = {
+  role: "system",
+  content: `You are an aerospace engineering expert assistant. Your primary focus is on:
+  - Aerospace engineering and industries
+  - CFD (Computational Fluid Dynamics)
+  - CAD (Computer-Aided Design)
+  - Mechanics and Physics related to aerospace
+  - Aircraft and spacecraft design
+  - Aerodynamics and propulsion systems
+
+  If a user asks questions outside these domains, politely redirect them by saying:
+  "I appreciate your inquiry, but my expertise is specifically focused on aerospace engineering and related physics topics. Would you like to ask something about aircraft, spacecraft, aerodynamics, or similar aerospace topics?"
+
+  Always maintain a professional and educational tone. When answering relevant questions, provide detailed technical explanations while keeping the content accessible.`
+};
+
 // Add this to debug the API key
 console.log('API Key loaded:', API_KEY ? 'Yes' : 'No');
 
@@ -45,7 +62,7 @@ const ChatInterface = () => {
         headers,
         body: JSON.stringify({
           model: 'anthropic/claude-2',
-          messages: [...messages, userMessage],
+          messages: [SYSTEM_MESSAGE, ...messages, userMessage],
           temperature: 0.7,
           max_tokens: 1000,
           stream: false
@@ -80,6 +97,10 @@ const ChatInterface = () => {
 
   return (
     <div className="flex flex-col h-[600px] bg-white rounded-lg shadow">
+      <div className="bg-gray-50 p-4 border-b">
+        <h2 className="text-lg font-semibold text-gray-700">Aerospace Engineering Assistant</h2>
+        <p className="text-sm text-gray-500">Ask questions about aerospace, CFD, CAD, mechanics, and physics</p>
+      </div>
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.map((message, index) => (
           <div
@@ -103,7 +124,7 @@ const ChatInterface = () => {
           <textarea
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
-            placeholder="Type your message..."
+            placeholder="Ask about aerospace engineering, CFD, aircraft design..."
             className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
             disabled={loading}
             rows={3}

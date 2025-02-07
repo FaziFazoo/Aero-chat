@@ -47,18 +47,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     try {
-      console.log('Attempting sign in:', email);
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
       
-      if (error) {
-        console.error('Sign in error:', error);
-        throw error;
-      }
+      if (error) throw error;
       
-      console.log('Sign in successful:', data);
       navigate('/');
     } catch (error) {
       console.error('Sign in error:', error);
@@ -77,7 +72,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       if (error) throw error;
-      await signIn(email, password);
+      
+      // Don't auto sign in, just redirect to login
+      navigate('/login');
     } catch (error) {
       console.error('Sign up error:', error);
       throw error;
