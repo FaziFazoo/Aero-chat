@@ -53,12 +53,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
       
       if (error) {
+        // Simplified error handling
         if (error.message.includes('Invalid login credentials')) {
-          // Check if user exists but hasn't completed registration
-          const { data: userData } = await supabase.auth.admin.getUserByEmail(email);
-          if (!userData?.user) {
-            throw new Error('User not registered. Please sign up first.');
-          }
+          throw new Error('Invalid email or password. Not registered? Please sign up.');
         }
         throw error;
       }
