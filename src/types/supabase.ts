@@ -30,6 +30,9 @@ export interface UserProfile {
   id: string;
   full_name: string;
   email: string;
-  avatar_url?: string;
-  last_seen?: string;
+}
+
+export interface AuthError {
+  message: string;
+  status?: number;
 } 

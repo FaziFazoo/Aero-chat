@@ -53,13 +53,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
       
       if (error) {
-        // Check if user exists
-        const { data: { user }, error: checkError } = await supabase.auth.getUser();
-        
-        if (checkError || !user) {
-          throw new Error('Account not found. Please register first.');
+        if (error.message.includes('Email not confirmed')) {
+          // If email not confirmed, try to sign in anyway (since we disabled confirmation requirement)
+          const { error: signInError } = await supabase.auth.signInWithPassword({
+            email,
+            password
+          });
+          
+          if (signInError) throw signInError;
         } else {
-          throw new Error('Invalid password. Please try again.');
+          throw error;
         }
       }
       
@@ -75,25 +78,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signUp = async (email: string, password: string, fullName: string) => {
     try {
-      // First check if user exists
-      const { data: existingUser } = await supabase.auth.getUser();
-      if (existingUser?.user) {
-        throw new Error('Email already registered. Please sign in instead.');
-      }
-
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           data: { full_name: fullName },
-          emailRedirectTo: 'https://aero-chat.vercel.app/login'
+          emailRedirectTo: 'https://aero-chat.vercel.app/login',
+          // Disable email confirmation requirement
+          emailConfirmationRequired: false
         }
       });
 
       if (error) throw error;
       
       if (data?.user) {
-        // Auto sign in after registration
+        // Auto sign in after registration without waiting for email confirmation
         const { error: signInError } = await supabase.auth.signInWithPassword({
           email,
           password

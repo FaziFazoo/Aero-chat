@@ -8,5 +8,10 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "framework": "vite",
-  "installCommand": "npm install"
+  "installCommand": "npm install",
+  "env": {
+    "VITE_SUPABASE_URL": "https://pgwmdejdhmtncekrarfv.supabase.co",
+    "VITE_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBnd21kZWpkaG10bmNla3JhcmZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzg5MzA5MTIsImV4cCI6MjA1NDUwNjkxMn0.B8dUxrJhhk0fEEtP_VTxFJh-iHTbQPLNibgGXu30-io",
+    "VITE_OPENROUTER_API_KEY": "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"
+  }
 } 
