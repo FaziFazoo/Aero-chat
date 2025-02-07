@@ -2,10 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Add this to test if CSS is loading */
+:root {
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
 body {
   margin: 0;
-  padding: 0;
   min-height: 100vh;
 }
 

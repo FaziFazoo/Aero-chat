@@ -15,7 +15,17 @@ export default defineConfig(({ mode }) => {
     },
     build: {
       outDir: 'dist',
-      sourcemap: true
+      sourcemap: true,
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          }
+        }
+      }
+    },
+    optimizeDeps: {
+      include: ['react', 'react-dom', 'react-router-dom']
     }
   }
 }) 
