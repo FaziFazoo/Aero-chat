@@ -33,7 +33,7 @@ const ChatInterface = () => {
           'X-Title': 'Aero Chat'
         },
         body: JSON.stringify({
-          model: 'mistralai/mistral-7b-instruct',
+          model: 'deepseek/deepseek-r1-distill-llama-8b',
           messages: [
             {
               role: 'system',
