@@ -19,7 +19,7 @@ const formatMessage = (content: string) => {
 };
 
 const ChatInterface = () => {
-  const { user } = useAuth();
+  const { user: currentUser } = useAuth();
   const [messages, setMessages] = useState<Array<{ role: string; content: string }>>([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(false);
@@ -66,11 +66,11 @@ const ChatInterface = () => {
         content: data.choices[0].message.content
       };
       setMessages(prev => [...prev, aiMessage]);
-    } catch (error) {
-      console.error('Error:', error);
+    } catch (err) {
+      console.error('Error:', err);
       const errorMessage = { 
         role: 'assistant', 
-        content: `Error: ${error.message}` 
+        content: `Error: ${err instanceof Error ? err.message : 'Unknown error'}` 
       };
       setMessages(prev => [...prev, errorMessage]);
     } finally {
