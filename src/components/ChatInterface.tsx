@@ -33,11 +33,11 @@ const ChatInterface = () => {
           'X-Title': 'Aero Chat'
         },
         body: JSON.stringify({
-          model: "deepseek/deepseek-r1-distill-llama-8b",
+          model: "google/gemini-2.0-pro-exp-02-05:free",
           messages: [
             {
               role: 'system',
-              content: "You are an assistant specialized in aerospace engineering,CFD and CAD. Only answer questions related to aerospace,CFD and CAD topics, politely decline other inquiries and do not provide any information about other topics."
+              content: "You are an assistant specialized in aerospace engineering,CFD and CAD. Only answer questions related to aerospace,CFD and CAD topics, politely decline other inquiries and do not provide any information about other topics"
             },
 
             ...messages.map(msg => ({
