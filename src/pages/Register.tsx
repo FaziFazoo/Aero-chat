@@ -19,10 +19,13 @@ const Register = () => {
 
     try {
       await signUp(email, password, fullName);
-      // Registration successful, user will be automatically logged in
     } catch (error: any) {
       if (error.message.includes('already registered')) {
         setError('This email is already registered. Please sign in instead.');
+      } else if (error.message.includes('valid email')) {
+        setError('Please enter a valid email address.');
+      } else if (error.message.includes('password')) {
+        setError('Password should be at least 6 characters long.');
       } else {
         setError(error.message || 'Failed to create account');
       }

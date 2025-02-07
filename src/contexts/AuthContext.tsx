@@ -53,15 +53,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
       
       if (error) {
-        // Simplified error handling
-        if (error.message.includes('Invalid login credentials')) {
-          throw new Error('Invalid email or password. Not registered? Please sign up.');
+        // Check if user exists
+        const { data: { user }, error: checkError } = await supabase.auth.getUser();
+        
+        if (checkError || !user) {
+          throw new Error('Account not found. Please register first.');
+        } else {
+          throw new Error('Invalid password. Please try again.');
         }
-        throw error;
       }
       
-      navigate('/');
-    } catch (error) {
+      if (data?.user) {
+        console.log('Login successful:', data.user.email);
+        navigate('/');
+      }
+    } catch (error: any) {
       console.error('Sign in error:', error);
       throw error;
     }
@@ -69,6 +75,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signUp = async (email: string, password: string, fullName: string) => {
     try {
+      // First check if user exists
+      const { data: existingUser } = await supabase.auth.getUser();
+      if (existingUser?.user) {
+        throw new Error('Email already registered. Please sign in instead.');
+      }
+
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -80,7 +92,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (error) throw error;
       
-      // Check if user was created successfully
       if (data?.user) {
         // Auto sign in after registration
         const { error: signInError } = await supabase.auth.signInWithPassword({
