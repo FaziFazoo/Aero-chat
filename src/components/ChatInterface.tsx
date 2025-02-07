@@ -22,30 +22,78 @@ const ChatInterface = () => {
     scrollToBottom();
   }, [messages]);
 
+  const sendMessageToAI = async (userMessage: string) => {
+    try {
+      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_OPENROUTER_API_KEY}`,
+          'HTTP-Referer': 'https://aero-chat.vercel.app',
+          'X-Title': 'Aero Chat'
+        },
+        body: JSON.stringify({
+          model: 'mistralai/mistral-7b-instruct',
+          messages: [
+            {
+              role: 'system',
+              content: 'You are an aerospace engineering expert assistant. Provide accurate, technical, yet understandable responses about aircraft, spacecraft, aerodynamics, and related topics.'
+            },
+            ...messages.map(msg => ({
+              role: msg.role,
+              content: msg.content
+            })),
+            {
+              role: 'user',
+              content: userMessage
+            }
+          ]
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to get AI response');
+      }
+
+      const data = await response.json();
+      return data.choices[0]?.message?.content || 'Sorry, I could not generate a response.';
+    } catch (error) {
+      console.error('AI response error:', error);
+      throw error;
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim()) return;
 
-    const newMessage: Message = {
+    const userMessage: Message = {
       role: 'user',
       content: input,
       timestamp: new Date().toLocaleTimeString()
     };
 
-    setMessages(prev => [...prev, newMessage]);
+    setMessages(prev => [...prev, userMessage]);
     setInput('');
     setIsLoading(true);
 
     try {
-      // Add AI response
+      const aiResponse = await sendMessageToAI(input);
+      
       const aiMessage: Message = {
         role: 'assistant',
-        content: 'This is a sample response from the AI assistant.',
+        content: aiResponse,
         timestamp: new Date().toLocaleTimeString()
       };
+      
       setMessages(prev => [...prev, aiMessage]);
     } catch (error) {
       console.error('Error:', error);
+      setMessages(prev => [...prev, {
+        role: 'assistant',
+        content: 'Sorry, I encountered an error. Please try again.',
+        timestamp: new Date().toLocaleTimeString()
+      }]);
     } finally {
       setIsLoading(false);
     }
