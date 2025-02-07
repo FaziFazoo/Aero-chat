@@ -37,7 +37,7 @@ const ChatInterface = () => {
       const headers = {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${API_KEY}`,
-        'HTTP-Referer': window.location.origin,
+        'HTTP-Referer': 'https://aero-chat.vercel.app',
       };
 
       const response = await fetch(API_URL, {
