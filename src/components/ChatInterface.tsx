@@ -33,7 +33,7 @@ const ChatInterface = () => {
           'X-Title': 'Aero Chat'
         },
         body: JSON.stringify({
-          model: 'deepseek/deepseek-r1-distill-llama-8b',
+          model: "google/gemini-2.0-flash-thinking-exp:free",
           messages: [
             {
               role: 'system',
