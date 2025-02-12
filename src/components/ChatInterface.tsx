@@ -140,7 +140,7 @@ const ChatInterface = () => {
         </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto px-6 py-4 sm:px-6 sm:py">
+        <div className="flex-1 overflow-y-auto px-6 py-4 sm:px-6 sm:py-4 w-full sm:w-[90%] mx-auto">
           {messages.length === 0 && (
             <div className="text-center text-gray-500 mt-12">
               <h2 className="text-2xl font-bold mb-2 sm:mb-3">Welcome to Aero Chat!</h2>
