@@ -37,7 +37,7 @@ const ChatInterface = () => {
           messages: [
             {
               role: 'system',
-              content: "You are an assistant specialized in aerospace engineering,CFD and CAD. Only answer questions related to aerospace,CFD and CAD topics, politely decline other inquiries and do not provide any information about other topics"
+              content: "You are an assistant specialized in aerospace engineering,CFD and CAD, give the answers in points which makes user to read easily. Only answer questions related to aerospace,CFD and CAD topics, politely decline other inquiries and do not provide any information about other topics"
             },
 
             ...messages.map(msg => ({
@@ -140,11 +140,11 @@ const ChatInterface = () => {
         </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto px-6 py-4">
+        <div className="flex-1 overflow-y-auto px-6 py-4 sm:px-6 sm:py">
           {messages.length === 0 && (
             <div className="text-center text-gray-500 mt-12">
-              <h2 className="text-2xl font-bold mb-3">Welcome to Aero Chat!</h2>
-              <p className="text-lg">Start your conversation with our AI assistant.</p>
+              <h2 className="text-2xl font-bold mb-2 sm:mb-3">Welcome to Aero Chat!</h2>
+              <p className="text-base sm:text-lg">Start your conversation with our AI assistant.</p>
             </div>
           )}
           {messages.map((message, index) => (
@@ -159,8 +159,8 @@ const ChatInterface = () => {
                     : 'bg-white text-gray-800'
                 } shadow-md`}
               >
-                <p className="text-base leading-relaxed">{message.content}</p>
-                <span className="text-xs opacity-75 mt-2 block">
+                <p className="text-sm sm:text-base leading-relaxed">{message.content}</p>
+                <span className="text-xs opacity-75 mt-1 block sm:mt-2">
                   {message.timestamp}
                 </span>
               </div>
